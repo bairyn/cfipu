@@ -9,7 +9,7 @@ author:              Byron James Johnson
 maintainer:          KrabbyKrap@gmail.com
 stability:           dev
 synopsis:            cfopu processor
-category:            Interpreter
+category:            Compilers/Interpreters
 description:         A cfopu processor that can interpret and process cfopu source
 tested-with:         GHC == 6.12.1
 
