@@ -494,9 +494,9 @@ apply n f = f . apply (pred n) f
 wrap :: forall a. (Integral a) => a -> String -> String
 wrap w = r' 0
     where r' :: (Integral a) => a -> String -> String
-          r' a []           = ""
-          r' a ('@':'@':xs) = xs
-          r' a ('\n':xs)    = '\n' : r' 0 xs
-          r' a (x:xs)
-            | a >= w        = x:'\n' : r' 0 xs
-            | otherwise     = x : (r' (succ a) xs)
+          r' a []        = ""
+          r' a ('\n':xs) = '\n' : r' 0 xs
+          r' a s@(x:xs)
+              | not $ isPredefinedSymbol x = '@':'@':s
+              | a >= w                     = x:'\n' : r' 0 xs
+              | otherwise                  = x : (r' (succ a) xs)
