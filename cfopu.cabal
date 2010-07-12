@@ -7,7 +7,6 @@ license-file:        LICENSE
 copyright:           Copyright (C) 2010 Byron James Johnson
 author:              Byron James Johnson
 maintainer:          KrabbyKrap@gmail.com
-stability:           dev
 synopsis:            cfopu processor
 category:            Compilers/Interpreters
 description:         A cfopu processor that can interpret and process cfopu source
