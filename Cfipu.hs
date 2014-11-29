@@ -1,7 +1,7 @@
 --8000---
 
 {-
-cfopu is a primitive, minimalistic language, similar to assembly and brainfuck.  It can read input from stdin, and print to stdout.  When a file is interpreted, its contents are placed in memory after being processed by the preprocessor.
+cfipu is a primitive, minimalistic language, similar to assembly and brainfuck.  It can read input from stdin, and print to stdout.  When a file is interpreted, its contents are placed in memory after being processed by the preprocessor.
 There are two pointers: the data pointer, and the instruction pointer, both of which initially point to the first byte.  Each byte is parsed, the instruction pointer is set ahead by one byte, and then the command is executed if the byte is a command.  There are only 8 primitive commands:
 
 0: End the program.
@@ -27,7 +27,7 @@ Incrementing the data pointer by two might seem arbitrary, but is necessary, bec
 
 After macros are parsed by the preprocessor, all unknown characters are stripped out by the preprocessor *until* the special character sequence @@ is encountered.  The @@ is removed by the preprocessor and then it isn't treated specially anymore, and then characters that would not be recognized by the instruction pointer are no longer stripped out.
 
-Any file can be interpreted or compiled as cfopu source; but, of course, not all cfopu programs will run as intended.  They can run indefinitely, or maliciously use up many resources.
+Any file can be interpreted or compiled as cfipu source; but, of course, not all cfipu programs will run as intended.  They can run indefinitely, or maliciously use up many resources.
 -}
 
 {-
