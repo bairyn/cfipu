@@ -27,7 +27,7 @@ executable cfipu
   default-language: Haskell2010
   buildable:         True
   build-tools:       ghc >= 7.0.0
-  hs-source-dirs:   .
+  hs-source-dirs:   src
   ghc-options:      -Wall -O2 -threaded
   default-extensions:
     --,GADTs
