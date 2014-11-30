@@ -142,6 +142,7 @@ module Main  ( module Data.Memory
              , wrap
              ) where
 
+import Control.Exception
 import Control.Monad (when, unless, mzero, mplus)
 import Control.Monad.State
 import Data.Char (isSpace)
@@ -310,7 +311,7 @@ parseMacros = execState $ do
 
 -- Read macros and remove their definitions
 readMacros :: State String Macros
-readMacros = State $ step False []
+readMacros = state $ step False []
     where step :: Bool -> Macros -> String -> (Macros, String)
           step _      ms  []          = (ms, [])
           step noIgnr ms ('#':x:xs)   = let (m', s') = step noIgnr ms xs

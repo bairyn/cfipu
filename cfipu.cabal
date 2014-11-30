@@ -40,7 +40,7 @@ executable cfipu
   -- TODO: add version constraints.
   build-depends:
     base         >= 4.2.0.0  && < 5
-   ,mtl          >= 1.1.0.2
+   ,mtl          >= 2.0.0.0
    ,containers   >= 0.3.0.0
    ,bytestring   >= 0.9.1.5
    ,dequeue      >= 0.1.5
