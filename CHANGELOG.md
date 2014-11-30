@@ -1,5 +1,8 @@
 PLACEHOLDER
 -----
+
+1.1.0.2
+-----
 * Fixed build errors.
   * Cfipu.hs exports main.
   * Add newly missing import of Control.Exception in Cfipu.hs.
