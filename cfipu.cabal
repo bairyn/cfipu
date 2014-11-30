@@ -28,6 +28,7 @@ executable cfipu
   buildable:         True
   build-tools:       ghc >= 7.0.0
   hs-source-dirs:   src
+  main-is:          Cfipu.hs
   ghc-options:      -Wall -O2 -threaded
   default-extensions:
     --,GADTs

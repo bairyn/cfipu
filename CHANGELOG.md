@@ -1,5 +1,7 @@
 PLACEHOLDER
 -----
+* Add missing main-is field, fixing build errors.
+* Correct git repository URL for head.
 
 1.1.0.1
 -----
