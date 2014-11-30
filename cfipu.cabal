@@ -37,6 +37,7 @@ executable cfipu
   other-extensions:
     ScopedTypeVariables
    ,FlexibleContexts
+  -- TODO: add version constraints.
   build-depends:
     base         >= 4.2.0.0  && < 5
    ,mtl          >= 1.1.0.2
