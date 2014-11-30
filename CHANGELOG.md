@@ -1,6 +1,7 @@
 PLACEHOLDER
 -----
 * Fixed build errors.
+  * Cfipu.hs exports main.
   * Add newly missing import of Control.Exception in Cfipu.hs.
   * Replace mtl's pure state monad constructor with `state`, previously
     `State`.

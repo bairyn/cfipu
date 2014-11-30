@@ -116,31 +116,34 @@ s
 
 {-# LANGUAGE ScopedTypeVariables, FlexibleContexts #-}
 
-module Main  ( module Data.Memory
-             , help
-             , execute
-             , preprocess
-             , isPredefinedSymbol
-             , Format
-             , setWidth
-             , factor
-             , PMacro
-             , PMName
-             , PMPattern
-             , Pattern
-             , macroPatterns
-             , macroPatternsMaxKeyLen
-             , pmacrosFull
-             , pmacros
-             , findIndexPrefix
-             , mlookupLen
-             , lookupLen
-             , flp
-             , maybeOutify
-             , foldrUpdate
-             , apply
-             , wrap
-             ) where
+module Main
+  ( main
+  , help
+  , execute
+  , preprocess
+  , isPredefinedSymbol
+  , Format
+  , setWidth
+  , factor
+  , PMacro
+  , PMName
+  , PMPattern
+  , Pattern
+  , macroPatterns
+  , macroPatternsMaxKeyLen
+  , pmacrosFull
+  , pmacros
+  , findIndexPrefix
+  , mlookupLen
+  , lookupLen
+  , flp
+  , maybeOutify
+  , foldrUpdate
+  , apply
+  , wrap
+
+  , module Data.Memory
+  ) where
 
 import Control.Exception
 import Control.Monad (when, unless, mzero, mplus)
