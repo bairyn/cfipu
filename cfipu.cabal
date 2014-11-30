@@ -1,6 +1,6 @@
 name:               cfipu
 -- Don't forget to bump the tag and CHANGELOG placeholder too.
-version:            1.1.0.0
+version:            1.1.0.1
 cabal-version:      >= 1.10
 build-type:         Simple
 license:            BSD3
@@ -53,4 +53,4 @@ source-repository head
 source-repository this
   type:     git
   location: git@github.com:bairyn/cfipu.git
-  tag:      v1.1.0.0
+  tag:      v1.1.0.1
