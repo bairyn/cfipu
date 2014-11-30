@@ -48,7 +48,7 @@ executable cfipu
 
 source-repository head
   type:     git
-  location: git@github.com:bairyn/cfipu
+  location: git@github.com:bairyn/cfipu.git
 
 source-repository this
   type:     git
