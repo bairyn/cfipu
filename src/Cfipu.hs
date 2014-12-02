@@ -146,10 +146,10 @@ module Main
   ) where
 
 import Control.Exception
-import Control.Monad.State
+import Control.Monad.State hiding (get)
 import Data.Char (isSpace)
 import Data.Default
-import Data.List (genericLength, genericIndex, genericTake, genericDrop, genericSplitAt, findIndex, intersperse, isPrefixOf, sortBy, sort)
+import Data.List (genericLength, genericReplicate, genericIndex, genericTake, genericDrop, genericSplitAt, findIndex, intersperse, isPrefixOf, sortBy, sort)
 import qualified Data.Map as M
 import Data.Memory
 import qualified Data.Set as S
@@ -161,7 +161,7 @@ main :: IO ()
 main = do
     args     <- getArgs
     progName <- getProgName
-    let argc = genericLength args
+    let argc = length args
 
     if null args
         then do
@@ -171,8 +171,8 @@ main = do
                 pre  = args !! 1
                 fact = args !! 2
                 wdth = args !! 3
-            handle <- openFile src ReadMode
-            source <- hGetContents handle
+            srcHandle <- openFile src ReadMode
+            source <- hGetContents srcHandle
 
             source `seq` return ()
 
@@ -200,10 +200,10 @@ help progName = do
 --- EXECUTION ---
 
 execute :: Memory -> IO ()
-execute m = do
+execute mem = do
     hSetBuffering stdin  NoBuffering
     hSetBuffering stdout NoBuffering
-    execute' m
+    execute' mem
     where execute' :: Memory -> IO ()
           execute' m = let m' = moveInstructionPointerRight m
                        in  case M.lookup (getInstruction m) instructions of
@@ -212,7 +212,7 @@ execute m = do
 
 instructions :: M.Map Cell (Memory -> (Memory -> IO ()) -> IO ())
 instructions = M.fromList . concat . (\ ~(is:iss) -> map (\ ~(k, v) -> (k - (charToCell '0'), v)) is : iss) . replicate 2 . map (\ ~(k, v) -> (charToCell k, v)) $
-    [ ('0', \m r -> do
+    [ ('0', \_ _ -> do
                 return ())
     , ('1', \m r -> do
                 putChar $ cellToChar $ getData m
@@ -267,15 +267,15 @@ parseLineComments = concatMap line . lines
     where line :: String -> String
           line xs = let xs' = replace xs
                         replace :: String -> String
-                        replace []         = []
-                        replace ('#':x:xs) = '#':'#' : replace xs
-                        replace (x:xs)     = x : replace xs
+                        replace []           = []
+                        replace ('#':_:xs'') = '#':'#' : replace xs''
+                        replace (x'':xs'')   = x'' : replace xs''
                     in  case (findIndex isLineCommentSymbol xs') of
                             (Just i)  -> let i' = b $ pred i
-                                             b i
-                                                 | i < 0             = 0
-                                                 | isSpace $ xs !! i = b $ pred i
-                                                 | otherwise         = succ i
+                                             b this_i
+                                                 | this_i < 0             = 0
+                                                 | isSpace $ xs !! this_i = b $ pred this_i
+                                                 | otherwise              = succ this_i
                                          in  genericTake i' xs
                             (Nothing) -> xs ++ "\n"
 
@@ -290,15 +290,15 @@ parseDelimitedComments = parse
           parse  []           = []
           parse  ('#':x:xs)   = '#':x : parse xs
           parse  ('8':xs)     = let lenStr           = takeWhile isPredefinedSymbol xs
-                                    len              = genericLength lenStr
+                                    len              = integerLength lenStr
                                     rest             = genericDrop len xs
                                     (former, latter) = genericSplitAt (succ len) rest
                                 in  ignore former latter
           parse  (x:xs)       = x : parse xs
           ignore _         []         = []
           ignore delimiter a@(_:xs)
-              | genericTake (genericLength delimiter) a == delimiter = parse $ genericDrop (genericLength delimiter) a
-              | otherwise                                     = ignore delimiter xs
+              | genericTake (integerLength delimiter) a == delimiter = parse $ genericDrop (integerLength delimiter) a
+              | otherwise                                            = ignore delimiter xs
 
 -- macros --
 
@@ -321,10 +321,10 @@ readMacros = state $ step False []
           step False  ms ('@':'@':xs) = let (m', s') = step True ms xs
                                         in  (m', '@':'@' : s')
           step noIgnr ms ('@':xs)     = let lenStr           = takeWhile isPredefinedSymbol xs
-                                            len              = genericLength lenStr
+                                            len              = integerLength lenStr
                                             rest             = genericDrop len xs
                                             (name, body)     = genericSplitAt (succ len) rest
-                                            terminatorIndex  = findIndexPrefix name body
+                                            terminatorIndex  = findIndexPrefix name body :: Integer
                                             (former, latter) = genericSplitAt terminatorIndex body
                                             macro            = (name, former)
                                             post             = genericDrop (succ len) latter
@@ -335,7 +335,7 @@ readMacros = state $ step False []
 -- Substitute macro definitions themselves, and sort the list of macros by length of key, descending, so that the macros with longer names will be tested first.
 processMacros :: Macros -> State String Macros
 processMacros ms = return . fst . foldrUpdate replace 0 $ ms
-    where len = genericLength ms
+    where len = integerLength ms
           replace x (lastMacros, n) = let n' = succ n
                                           replaceSingle (name, pattern) = (name, execState (applyMacros [x]) pattern)
                                       in  ((map replaceSingle $ genericTake (len - n') lastMacros) ++ (genericDrop (len - n') lastMacros), n')
@@ -343,14 +343,14 @@ processMacros ms = return . fst . foldrUpdate replace 0 $ ms
 applyMacros :: Macros -> State String ()
 applyMacros [] = return ()
 applyMacros m  = modify step
-    where m'              = sortBy sort m
-          len             = maximum . map (genericLength . fst) $ m'
-          sort a b        = (genericLength . fst $ b) `compare` (genericLength . fst $ a)
+    where m'              = sortBy sort' m
+          len             = maximum . map (integerLength . fst) $ m'
+          sort' a b       = (integerLength . fst $ b) `compare` (integerLength . fst $ a)
           step []         = []
           step ('#':x:xs) = '#':x : step xs
           step a@(x:xs)   = case lookupLen (genericTake len a) $ m' of
-                                (Just (pattern, len)) -> pattern ++ step (genericDrop len a)
-                                (Nothing)             -> x : step xs
+                                (Just (pattern, len')) -> pattern ++ step (genericDrop len' a)
+                                (Nothing)              -> x : step xs
 
 isPredefinedSymbol :: Char -> Bool
 isPredefinedSymbol '0' = True
@@ -371,21 +371,21 @@ isPredefinedSymbol _   = False
 
 -- May not work correctly when the input is changed after being preprocessed
 factor :: Format -> String -> String
-factor fmt s = let s'            = prefixHash s
-                   (ms, s'')     = apply (genericLength macroPatterns) S.empty s'
-                   apply :: (Integral a) => a -> S.Set PMacro -> String -> (S.Set PMacro, String)
-                   apply 0 ms xs = (ms, xs)
-                   apply n ms xs = let (ms', xs') = r' ms xs
-                                   in  apply (pred n) ms' xs'
-                   body          = s''
-                   nms           = pmacros S.\\ ms
-                   ms'           = reverse . sort $ S.toList ms
-                   nms'          = reverse . sort $ S.toList nms
-                   header        = initl ++ foldr used [] ms' ++ inter ++ foldr unused [] nms' ++ append
+factor fmt s = let s'             = prefixHash s
+                   (ms, s'')      = apply' (integerLength macroPatterns) S.empty s'
+                   apply' :: (Integral a) => a -> S.Set PMacro -> String -> (S.Set PMacro, String)
+                   apply' 0 this_ms xs = (this_ms, xs)
+                   apply' n this_ms xs = let (this_ms', xs') = r' this_ms xs
+                                         in  apply' (pred n) this_ms' xs'
+                   body           = s''
+                   nms            = pmacros S.\\ ms
+                   ms'            = reverse . sort $ S.toList ms
+                   nms'           = reverse . sort $ S.toList nms
+                   header         = initl ++ foldr used [] ms' ++ inter ++ foldr unused [] nms' ++ append
                    used   :: PMacro -> String -> String
-                   used   x acc  = (++) acc $ case lookup x pmacrosFull of
-                                                  (Just (name, pattern)) -> "@" ++ (replicate (pred . genericLength $ name) '0') ++ name ++ pattern ++ name ++ "\n"
-                                                  (Nothing)              -> []
+                   used   x acc   = (++) acc $ case lookup x pmacrosFull of
+                                                   (Just (name, pattern)) -> "@" ++ (genericReplicate (pred . integerLength $ name) '0') ++ name ++ pattern ++ name ++ "\n"
+                                                   (Nothing)              -> []
                    unused :: PMacro -> String -> String
                    unused = used
                    initl  = ""
@@ -400,7 +400,7 @@ factor fmt s = let s'            = prefixHash s
     where r' :: S.Set PMacro -> String -> (S.Set PMacro, String)
           r' ms []       = (ms, [])
           r' ms a@(x:xs) = case lookupLen (genericTake macroPatternsMaxKeyLen a) macroPatterns of
-                               (Just ((Pattern {p_macro = macro, p_name = name}), len)) -> let (ms', a') = r' (S.insert macro ms) $ genericDrop len a
+                               (Just ((Pattern {p_macro = macro, p_name = name}), len)) -> let (ms', a') = r' (S.insert macro ms) $ genericDrop (len :: Integer) a
                                                                                            in  (ms', name ++ a')
                                (Nothing)                                                -> let (ms', xs') = r' ms $ xs
                                                                                            in  (ms', x:xs')
@@ -408,8 +408,8 @@ factor fmt s = let s'            = prefixHash s
 prefixHash :: String -> String
 prefixHash []       = []
 prefixHash a@(x:xs) =
-    case lookupLen (take macroPatternsMaxKeyLen a) $ map snd pmacrosFull of
-        (Just (_, len)) -> ('#' : intersperse '#' (genericTake len a)) ++ (prefixHash $ genericDrop len a)
+    case lookupLen (genericTake (macroPatternsMaxKeyLen :: Integer) a) $ map snd pmacrosFull of
+        (Just (_, len)) -> ('#' : intersperse '#' (genericTake (len :: Integer) a)) ++ (prefixHash $ genericDrop (len :: Integer) a)
         (Nothing)       -> x : prefixHash xs
 
 data PMacro =  -- predefined macro enumeration
@@ -468,11 +468,11 @@ findIndexPrefix find = r' 0
               | otherwise           = r' (succ i) xs
 
 mlookupLen :: (Eq k, Ord k, Integral b) => [k] -> M.Map [k] a -> Maybe (a, b)
-mlookupLen k = lookupLen k . sortBy (\ ~(k, v) ~(k2, v2) -> genericLength k2 `compare` genericLength k) . M.toList
+mlookupLen k = lookupLen k . sortBy (\ ~(k1, _v1) ~(k2, _v2) -> integerLength k2 `compare` integerLength k1) . M.toList
 
 lookupLen :: (Eq k, Integral b) => [k] -> [([k], a)] -> Maybe (a, b)
 lookupLen []       _  = Nothing
-lookupLen a@(_:ks) xs = foldr (\ ~(k, v) acc -> if k `isPrefixOf` a then Just (v, genericLength k) `mplus` acc else Nothing `mplus` acc) mzero xs --`mplus` lookupLen ks xs
+lookupLen a@(_:_ks) xs = foldr (\ ~(k, v) acc -> if k `isPrefixOf` a then Just (v, genericLength k) `mplus` acc else Nothing `mplus` acc) mzero xs --`mplus` lookupLen ks xs
 
 flp :: (a, b) -> (b, a)
 flp (a, b) = (b, a)
@@ -482,7 +482,7 @@ maybeOutify ((Just a),  b) = Just (a, b)
 maybeOutify ((Nothing), _) = Nothing
 
 foldrUpdate :: (a -> ([a], b) -> ([a], b)) -> b -> [a] -> ([a], b)
-foldrUpdate = r' 0
+foldrUpdate = r' (0 :: Integer)
     where r' :: (Integral c) => c -> (a -> ([a], b) -> ([a], b)) -> b -> [a] -> ([a], b)
           r' n f z xs = let (xs', acc) = r' (succ n) f z xs
                         in  case () of _
@@ -491,15 +491,19 @@ foldrUpdate = r' 0
 
 -- Negative integers are not checked!
 apply :: (Integral a) => a -> (b -> b) -> b -> b
-apply 0 f = id
-apply n f = f . apply (pred n) f
+apply 0 _f = id
+apply n  f = f . apply (pred n) f
 
 wrap :: forall a. (Integral a) => a -> String -> String
 wrap w = r' 0
     where r' :: (Integral a) => a -> String -> String
-          r' a []        = ""
-          r' a ('\n':xs) = '\n' : r' 0 xs
+          r' _ []        = ""
+          r' _ ('\n':xs) = '\n' : r' 0 xs
           r' a s@(x:xs)
               | not $ isPredefinedSymbol x = '@':'@':s
               | a >= w                     = x:'\n' : r' 0 xs
               | otherwise                  = x : (r' (succ a) xs)
+
+-- | 'genericLength' specialized for 'Integer's.
+integerLength :: [a] -> Integer
+integerLength = genericLength

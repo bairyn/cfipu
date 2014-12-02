@@ -1,5 +1,6 @@
 PLACEHOLDER
 -----
+* Fixed many warnings.
 
 1.1.0.2
 -----
