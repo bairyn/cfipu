@@ -1,5 +1,8 @@
 PLACEHOLDER
 -----
+
+1.1.0.4
+-----
 * Add notes on quality to source.
 
 1.1.0.3
