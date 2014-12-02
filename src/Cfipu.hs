@@ -146,16 +146,15 @@ module Main
   ) where
 
 import Control.Exception
-import Control.Monad (when, unless, mzero, mplus)
 import Control.Monad.State
 import Data.Char (isSpace)
 import Data.Default
-import Data.List (genericLength, genericIndex, genericTake, genericDrop, genericSplitAt, genericReplicate, splitAt, findIndex, foldl', maximum, intersperse, iterate, isPrefixOf, sortBy, sort)
+import Data.List (genericLength, genericIndex, genericTake, genericDrop, genericSplitAt, findIndex, intersperse, isPrefixOf, sortBy, sort)
 import qualified Data.Map as M
 import Data.Memory
 import qualified Data.Set as S
 import System.Environment (getArgs, getProgName)
-import System.IO (hClose, openFile, hGetContents, IOMode(..), writeFile, hSetBuffering, BufferMode(..), stdin, stdout, stderr)
+import System.IO (openFile, hGetContents, IOMode(..), hSetBuffering, BufferMode(..), stdin, stdout)
 import System.IO.Error
 
 main :: IO ()
