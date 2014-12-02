@@ -1,6 +1,14 @@
 --8000---
 
 {-
+A note on quality, copied from a version of README.md:
+
+This is an old toy project I wrote as a relatively inexperienced functional
+programmer.  I have not since cleaned up it, and by my current standards, its
+quality seems very low, sorry, although I haven't reviewed it very deeply.
+-}
+
+{-
 cfipu is a primitive, minimalistic language, similar to assembly and brainfuck.  It can read input from stdin, and print to stdout.  When a file is interpreted, its contents are placed in memory after being processed by the preprocessor.
 There are two pointers: the data pointer, and the instruction pointer, both of which initially point to the first byte.  Each byte is parsed, the instruction pointer is set ahead by one byte, and then the command is executed if the byte is a command.  There are only 8 primitive commands:
 
